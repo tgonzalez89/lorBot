@@ -1,3 +1,3 @@
 # lorBot
 
-Bot to farm experience in LoR
+Bot to farm XP in LoR
