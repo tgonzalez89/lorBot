@@ -1,5 +1,5 @@
-default_win_size.width=896
-default_win_size.height=503
+reference_window_size.width=896
+reference_window_size.height=503
 internal_resolution.width=1280
 internal_resolution.height=720
 port[0]=5555
