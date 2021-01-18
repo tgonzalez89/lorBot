@@ -6,7 +6,7 @@
 
 namespace mouse {
 
-    void left_click(HWND window, POINT p)
+    void left_click(const HWND window, const POINT p)
     {
         PostMessage(window, WM_LBUTTONDOWN, MK_LBUTTON, MAKELPARAM(p.x, p.y));
         Sleep(1);
@@ -14,9 +14,8 @@ namespace mouse {
         Sleep(1);
     }
 
-    void drag(HWND window, POINT p1, POINT p2, int speed = 1)
+    void drag(const HWND window, const POINT p1, const POINT p2, const unsigned int speed = 1)
     {
-        if (speed < 0) speed = 0;
         int x_diff = p2.x - p1.x;
         int y_diff = p2.y - p1.y;
         int i_max = std::abs(x_diff) > std::abs(y_diff) ? std::abs(x_diff) : std::abs(y_diff);
@@ -33,13 +32,13 @@ namespace mouse {
         Sleep(1);
     }
 
-    void drag_adb(int port, POINT p1, POINT p2, int time = 250) {
+    void drag_adb(const int port, const POINT p1, const POINT p2, const int time = 250) {
         std::stringstream ss;
         ss << util::ADB_EXE << " -s localhost:" << port << " shell input touchscreen swipe " << p1.x << " " << p1.y << " " << p2.x << " " << p2.y << " " << time;
         std::system(ss.str().c_str());
     }
 
-    void drag_adb2(int port, POINT p1, POINT p2, int max_x, int max_y)
+    void drag_adb2(const int port, const POINT p1, const POINT p2, const int max_x, const int max_y)
     {
         int x_diff = p2.x - p1.x;
         int y_diff = p2.y - p1.y;
