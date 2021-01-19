@@ -509,7 +509,7 @@ private:
 
 			xp_farm--;
 			elapsed_t = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_t).count();
-			total_duration += elapsed_t;
+			total_duration += static_cast<int>(elapsed_t);
 
 			std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Match #" << xp_farm_total-xp_farm << " ended. Duration: " << elapsed_t << " s. Average duration: " << total_duration/(xp_farm_total-xp_farm) << " s." << std::endl;
 		}
@@ -524,11 +524,13 @@ public:
 	{
 		init();
 		std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Running bot ..." << std::endl;
-
+		
+		SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
 		run_surrender_vs_friend(0);
 		run_surrender_vs_player(0);
 		run_surrender_vs_ai(0);
 		run_xp_farm(0);
+		SetThreadExecutionState(ES_CONTINUOUS);
 
 		for (int player = 0; player < (vs_friend ? NUM_PLAYERS : 1); player++) {
 			std::stringstream ss;
