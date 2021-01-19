@@ -439,7 +439,7 @@ private:
 			find_click_img_until_img_dissapears(player, "ok", "ok");
 			auto elapsed_t = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_t).count();
 
-			while (elapsed_t <= MAX_MATCH_TIME && !find_img(player, "continue")) {
+			while (elapsed_t <= max_match_time && !find_img(player, "continue")) {
 				update_status(player);
 				if (find_img(player, "pass", false) || find_img(player, "end_round", false)) {
 					click_coord(player, HAND_TUCKED, 500); // Open hand.
@@ -496,7 +496,7 @@ private:
 				elapsed_t = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_t).count();
 			}
 
-			if (elapsed_t > MAX_MATCH_TIME) {
+			if (elapsed_t > max_match_time) {
 				std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Surrendering ..." << std::endl;
 				click_coord_until_img_shows_up(player, OPTIONS, "surrender", 2000, 15);
 				find_click_img_until_img_shows_up(player, "surrender", "ok_surrender", 2000, 5);

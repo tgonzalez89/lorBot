@@ -9,4 +9,4 @@ vs_friend=0
 vs_player=0
 vs_ai=0
 xp_farm=100
-max_match_time=300
+max_match_time=600
