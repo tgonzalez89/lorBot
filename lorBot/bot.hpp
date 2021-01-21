@@ -16,7 +16,7 @@
 constexpr int NUM_PLAYERS = 2;
 constexpr char IMAGES_PATH[] = "..\\..\\images";
 constexpr char CONFIG_FILE[] = "..\\..\\config.txt";
-constexpr int DEFAULT_SLEEP = 2000;
+constexpr int DEFAULT_SLEEP = 1000;
 constexpr int MAX_IMG_SEARCH_TIME = 60;
 
 constexpr POINT BIAS = { 2, 42 };
@@ -169,9 +169,9 @@ private:
 
 			char game_window_title[128];
 			GetWindowTextA(game_HWND[player], game_window_title, 128);
-			std::cout << "DEBUG" << " - " << __FUNCTION__ << " - " << "Game window captured:" << std::endl;
-			std::cout << "    game_HWND:         " << game_HWND[player] << std::endl;
-			std::cout << "    game_window_title: " << game_window_title << std::endl;
+			std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Game window captured." << std::endl;
+			//std::cout << "DEBUG" << " - " << __FUNCTION__ << " - " << "game_HWND:" << game_HWND[player] << std::endl;
+			//std::cout << "DEBUG" << " - " << __FUNCTION__ << " - " << "game_window_title:" << game_window_title << std::endl;
 
 			std::stringstream ss;
 			ss << util::ADB_EXE << " connect localhost:" << port[player] << std::endl;
@@ -217,7 +217,7 @@ private:
 		if (sleep) Sleep(sleep);
 	}
 
-	void swipe(const int player, POINT coord1, POINT coord2, const unsigned int time = 250)
+	void swipe(const int player, POINT coord1, POINT coord2, const unsigned int time = 250, const unsigned int sleep = DEFAULT_SLEEP)
 	{
 		coord1 = {
 			coord1.x * internal_resolution.width / reference_window_size.width,
@@ -228,7 +228,7 @@ private:
 			coord2.y * internal_resolution.height / reference_window_size.height
 		};
 		mouse::drag_adb(port[player], coord1, coord2, time);
-		//if (sleep) Sleep(sleep);
+		if (sleep) Sleep(sleep);
 	}
 
 	bool find_click_img(const int player, const std::string img, const unsigned int sleep = DEFAULT_SLEEP, const bool click = true, const bool update = true)
@@ -286,7 +286,7 @@ private:
 		auto elapsed_t = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_t).count();
 		bool result = false;
 		while (!result && elapsed_t <= max_img_search_time) {
-			find_click_img(player, img1, sleep);
+			if (!find_click_img(player, img1, sleep)) Sleep(sleep);
 			result = find_img(player, img2);
 			elapsed_t = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_t).count();
 		}
@@ -298,7 +298,7 @@ private:
 		auto elapsed_t = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_t).count();
 		bool result = true;
 		while (result && elapsed_t <= max_img_search_time) {
-			find_click_img(player, img1, sleep);
+			if (!find_click_img(player, img1, sleep)) Sleep(sleep);
 			result = find_img(player, img2);
 			elapsed_t = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_t).count();
 		}
@@ -327,33 +327,39 @@ private:
 	void run_surrender_vs_friend(const int player)
 	{
 		if (!vs_friend) return;
-		std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Running surrender_vs_friend ..." << std::endl;
+		std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Running ..." << std::endl;
 
 		click_coord(player, HOME);
 		click_coord(!player, HOME);
 		click_coord_until_img_shows_up(player, FRIENDS_MENU, "friends_icons");
+		//TODO, if img "friend" not found, click on arrow to expand friends list.
 		find_click_img_until_img_shows_up(player, "friend", "challenge");
 		find_click_img_until_img_shows_up(player, "challenge", "normal_match");
 		find_click_img_until_img_shows_up(player, "normal_match", "cancel_challenge");
 		wait_for_img_to_show_up(!player, "accept");
-		find_click_img_until_img_dissapears(!player, "accept", "accept", DEFAULT_SLEEP*2);
+		find_click_img_until_img_dissapears(!player, "accept", "accept");
+		Sleep(4000);
 		if (find_img(player, "cancel_challenge")) {
 			find_click_img_until_img_dissapears(player, "cancel_challenge", "cancel_challenge");
 		}
 
-		int half = vs_friend / 2;
+		const int half = vs_friend / 2;
+		const int total = vs_friend;
 		while (vs_friend) {
+			SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
+			std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Starting match #" << total - vs_friend + 1 << std::endl;
+
 			wait_for_img_to_show_up(player, "select_your_deck");
 			wait_for_img_to_show_up(!player, "select_your_deck");
 			click_coord_until_img_shows_up(player, DECK_1, "ready");
 			click_coord_until_img_shows_up(!player, DECK_1, "ready");
 			find_click_img_until_img_dissapears(player, "ready", "ready");
 			find_click_img_until_img_dissapears(!player, "ready", "ready");
-			wait_for_img_to_show_up(player, "ok", 2000, 120);
-			wait_for_img_to_show_up(!player, "ok", 2000, 120);
+			wait_for_img_to_show_up(player, "ok");
+			wait_for_img_to_show_up(!player, "ok");
 
 			int surr_player = vs_friend > half ? !player : player;
-			click_coord_until_img_shows_up(surr_player, OPTIONS, "surrender", 2000, 15);
+			click_coord_until_img_shows_up(surr_player, OPTIONS, "surrender");
 			find_click_img_until_img_shows_up(surr_player, "surrender", "ok_surrender");
 			find_click_img_until_img_dissapears(surr_player, "ok_surrender", "ok_surrender");
 
@@ -373,19 +379,23 @@ private:
 	void run_surrender_vs_player(const int player)
 	{
 		if (!vs_player) return;
-		std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Running surrender_vs_player ..." << std::endl;
+		std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Running ..." << std::endl;
 
-		click_coord(player, PLAY);
+		click_coord(player, PLAY, 2000);
 		click_coord_until_img_shows_up(player, VS_PLAYER, "vs_player");
 		click_coord_until_img_shows_up(player, DECK_1, "play_deck");
 		click_coord_until_img_shows_up(player, NORMAL, "normal");
 
+		const int total = vs_player;
 		while (vs_player) {
+			SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
+			std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Starting match #" << total - vs_player + 1 << std::endl;
+
 			find_click_img_until_img_dissapears(player, "play_deck", "play_deck");
-			wait_for_img_to_show_up(player, "ok", 2000, 120);
-			click_coord_until_img_shows_up(player, OPTIONS, "surrender", 2000, 15);
-			find_click_img_until_img_shows_up(player, "surrender", "ok_surrender");
-			find_click_img_until_img_dissapears(player, "ok_surrender", "ok_surrender");
+			wait_for_img_to_show_up(player, "ok"); // TODO: check if matchmaking failed
+			click_coord_until_img_shows_up(player, OPTIONS, "surrender", 1000, 15);
+			find_click_img_until_img_shows_up(player, "surrender", "ok_surrender", 1000, 5);
+			find_click_img_until_img_dissapears(player, "ok_surrender", "ok_surrender", 1000, 5);
 			click_coord_until_img_shows_up(player, ABOVE_HAND_TUCKED, "continue");
 			find_click_img_until_img_dissapears(player, "continue", "continue");
 			wait_for_img_to_show_up(player, "play_deck");
@@ -399,15 +409,20 @@ private:
 	void run_surrender_vs_ai(const int player)
 	{
 		if (!vs_ai) return;
-		std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Running surrender_vs_ai ..." << std::endl;
+		std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Running ..." << std::endl;
 
-		click_coord(player, PLAY);
+		click_coord(player, PLAY, 2000);
 		click_coord_until_img_shows_up(player, VS_AI, "vs_ai");
 		click_coord_until_img_shows_up(player, DECK_1, "play_deck");
+
+		const int total = vs_ai;
 		while (vs_ai) {
+			SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
+			std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Starting match #" << total - vs_ai + 1 << std::endl;
+
 			find_click_img_until_img_dissapears(player, "play_deck", "play_deck");
-			wait_for_img_to_show_up(player, "ok", 2000, 120);
-			click_coord_until_img_shows_up(player, OPTIONS, "surrender", 2000, 15);
+			wait_for_img_to_show_up(player, "ok");
+			click_coord_until_img_shows_up(player, OPTIONS, "surrender");
 			find_click_img_until_img_shows_up(player, "surrender", "ok_surrender");
 			find_click_img_until_img_dissapears(player, "ok_surrender", "ok_surrender");
 			click_coord_until_img_shows_up(player, ABOVE_HAND_TUCKED, "continue");
@@ -423,34 +438,41 @@ private:
 	void run_xp_farm(const int player)
 	{
 		if (!xp_farm) return;
-		std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Running xp_farm ..." << std::endl;
+		std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Running ..." << std::endl;
 
-		click_coord(player, PLAY);
+		click_coord(player, PLAY, 2000);
 		click_coord_until_img_shows_up(player, VS_PLAYER, "vs_player");
 		click_coord_until_img_shows_up(player, DECK_1, "play_deck");
 		click_coord_until_img_shows_up(player, NORMAL, "normal");
 
-		const int xp_farm_total = xp_farm;
 		int total_duration = 0;
+		const int total = xp_farm;
 		while (xp_farm) {
+			SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
+			std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Starting match #" << total - xp_farm + 1 << std::endl;
+
 			auto start_t = std::chrono::high_resolution_clock::now();
 			find_click_img_until_img_dissapears(player, "play_deck", "play_deck");
-			wait_for_img_to_show_up(player, "ok", 2000, 120);
+			wait_for_img_to_show_up(player, "ok"); // TODO: check if matchmaking failed
 			find_click_img_until_img_dissapears(player, "ok", "ok");
 			auto elapsed_t = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_t).count();
 
+			bool full_life = true;
 			while (elapsed_t <= max_match_time && !find_img(player, "continue")) {
 				update_status(player);
 				if (find_img(player, "pass", false) || find_img(player, "end_round", false)) {
+					SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
+					if (!find_img(player, "full_life")) { // Check if player is bot or human by checking life totals
+						full_life = false;
+						break;
+					}
 					click_coord(player, HAND_TUCKED, 500); // Open hand.
-					swipe(player, HAND_EXPANDED, PLAY_CARD); // Try to play a card.
-					Sleep(500);
+					swipe(player, HAND_EXPANDED, PLAY_CARD, 250, 500); // Try to play a card.
 
 					bool attack = false;
 					update_status(player);
 					if (find_img(player, "select_target", false)) { // If the played card is a creature and there is no space, return it to the hand.
-						swipe(player, PLAY_CARD, HAND_EXPANDED);
-						Sleep(500);
+						swipe(player, PLAY_CARD, HAND_EXPANDED, 250, 500);
 						attack = true;
 					}
 					else if (find_img(player, "ok", false)) { // If the played card is a fast/slow spell, click OK to play the card.
@@ -464,12 +486,11 @@ private:
 					update_status(player);
 					// Check if attacking is possible.
 					if (attack && find_img(player, "attack_token", false) && (find_img(player, "pass", false) || find_img(player, "end_round", false))) {
-						int count = 6;
+						int count = 0;
 						// Move allies to attacking position.
-						while (count > 0 && !find_img(player, "empty_board")) {
-							swipe(player, ATTACK_SWIPE_START, ATTACK_SWIPE_END);
-							Sleep(250);
-							count--;
+						while (count < 6 && !find_img(player, "empty_board")) {
+							swipe(player, ATTACK_SWIPE_START, ATTACK_SWIPE_END, 250, 500);
+							count++;
 						}
 						find_click_img_until_img_dissapears(player, "attack", "attack", 500);
 					}
@@ -480,27 +501,26 @@ private:
 					int count = 0;
 					// Move allies to blocking position.
 					while (count < 6 && !find_img(player, "empty_board")) {
-						swipe(player, BLOCK_SWIPE_START, BLOCK_SWIPE_END[count], 500);
-						Sleep(1000);
+						swipe(player, BLOCK_SWIPE_START, BLOCK_SWIPE_END[count], 250, 500);
 						count++;
 					}
 					find_click_img_until_img_dissapears(player, "block", "block", 500);
 				}
 				else if (find_img(player, "ok", false) || find_img(player, "attack", false) || find_img(player, "block", false) || find_img(player, "replace", false)) { // Just in case something went wrong.
-					click_coord(player, OK, 1000);
+					click_coord(player, OK);
 				}
 				else {
-					click_coord(player, ABOVE_HAND_TUCKED, 1000);
+					click_coord(player, ABOVE_HAND_TUCKED);
 				}
 
 				elapsed_t = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_t).count();
 			}
 
-			if (elapsed_t > max_match_time) {
+			if (elapsed_t > max_match_time || !full_life) {
 				std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Surrendering ..." << std::endl;
-				click_coord_until_img_shows_up(player, OPTIONS, "surrender", 2000, 15);
-				find_click_img_until_img_shows_up(player, "surrender", "ok_surrender", 2000, 5);
-				find_click_img_until_img_dissapears(player, "ok_surrender", "ok_surrender", 2000, 5);
+				click_coord_until_img_shows_up(player, OPTIONS, "surrender", 1000, 15);
+				find_click_img_until_img_shows_up(player, "surrender", "ok_surrender", 1000, 5);
+				find_click_img_until_img_dissapears(player, "ok_surrender", "ok_surrender", 1000, 5);
 			}
 
 			click_coord_until_img_shows_up(player, ABOVE_HAND_TUCKED, "continue");
@@ -511,7 +531,7 @@ private:
 			elapsed_t = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_t).count();
 			total_duration += static_cast<int>(elapsed_t);
 
-			std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Match #" << xp_farm_total-xp_farm << " ended. Duration: " << elapsed_t << " s. Average duration: " << total_duration/(xp_farm_total-xp_farm) << " s." << std::endl;
+			std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Match #" << total-xp_farm << " ended. Duration: " << elapsed_t << " s. Average duration: " << total_duration/(total-xp_farm) << " s." << std::endl;
 		}
 
 		click_coord_until_img_dissapears(player, HOME, "play_deck");
