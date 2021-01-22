@@ -404,6 +404,7 @@ private:
 
 		click_coord_until_img_dissapears(player, HOME, "play_deck");
 		click_coord_until_img_dissapears(player, HOME, "select_your_deck");
+		Sleep(4000);
 	}
 
 	void run_surrender_vs_ai(const int player)
@@ -433,6 +434,7 @@ private:
 
 		click_coord_until_img_dissapears(player, HOME, "play_deck");
 		click_coord_until_img_dissapears(player, HOME, "select_your_deck");
+		Sleep(4000);
 	}
 
 	void run_xp_farm(const int player)
@@ -536,6 +538,7 @@ private:
 
 		click_coord_until_img_dissapears(player, HOME, "play_deck");
 		click_coord_until_img_dissapears(player, HOME, "select_your_deck");
+		Sleep(4000);
 	}
 
 public:
