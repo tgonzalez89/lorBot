@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdlib>
+#include <ctime>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -29,11 +31,14 @@ constexpr POINT DECK_1 = { 360 - BIAS.x, 200 - BIAS.y };
 constexpr POINT FRIENDS_MENU = { 812 - BIAS.x, 76 - BIAS.y };
 constexpr POINT OPTIONS = { 862 - BIAS.x, 74 - BIAS.y };
 constexpr POINT HAND_TUCKED = { 800 - BIAS.x, 500 - BIAS.y };
-constexpr POINT HAND_EXPANDED = { 450 - BIAS.x, 540 - BIAS.y };
+constexpr POINT HAND_EXPANDED_1 = { 420 - BIAS.x, 540 - BIAS.y };
+constexpr POINT HAND_EXPANDED_2 = { 522 - BIAS.x, 540 - BIAS.y };
 constexpr POINT PLAY_CARD = { 450 - BIAS.x, 280 - BIAS.y };
-constexpr POINT ATTACK_SWIPE_START = { 424 - BIAS.x, 514 - BIAS.y };
-constexpr POINT ATTACK_SWIPE_END = { 712 - BIAS.x, 408 - BIAS.y };
-constexpr POINT BLOCK_SWIPE_START = { 446 - BIAS.x, 480 - BIAS.y };
+constexpr POINT ATTACK_SWIPE_START_1 = { 428 - BIAS.x, 514 - BIAS.y };
+constexpr POINT ATTACK_SWIPE_START_2 = { 474 - BIAS.x, 514 - BIAS.y };
+constexpr POINT ATTACK_SWIPE_END = { 730 - BIAS.x, 410 - BIAS.y };
+constexpr POINT BLOCK_SWIPE_START_1 = { 428 - BIAS.x, 464 - BIAS.y };
+constexpr POINT BLOCK_SWIPE_START_2 = { 474 - BIAS.x, 464 - BIAS.y };
 constexpr POINT BLOCK_SWIPE_END[] = {
 	{ 192 - BIAS.x, 340 - BIAS.y },
 	{ 296 - BIAS.x, 340 - BIAS.y },
@@ -154,6 +159,7 @@ private:
 
 	void init()
 	{
+		std::srand(std::time(nullptr));
 		read_config();
 		load_imgs();
 
@@ -474,12 +480,12 @@ private:
 						break;
 					}
 					click_coord(player, HAND_TUCKED, 500); // Open hand.
-					swipe(player, HAND_EXPANDED, PLAY_CARD, 250, 500); // Try to play a card.
+					swipe(player, std::rand() % 2 ? HAND_EXPANDED_1 : HAND_EXPANDED_2, PLAY_CARD, 250, 500); // Try to play a card.
 
 					bool attack = false;
 					update_status(player);
 					if (find_img(player, "select_target", false)) { // If the played card is a creature and there is no space (or a targeted spell/creature/etc.), return it to the hand.
-						swipe(player, PLAY_CARD, HAND_EXPANDED, 250, 500);
+						swipe(player, PLAY_CARD, std::rand() % 2 ? HAND_EXPANDED_1 : HAND_EXPANDED_2, 250, 500);
 						attack = true;
 					}
 					else if (find_img(player, "ok", false)) { // If the played card is a spell, click OK to play the card.
@@ -498,7 +504,7 @@ private:
 						int count = 0;
 						// Move allies to attacking position.
 						while (count < 6 && !find_img(player, "empty_board", true, 0.125)) {
-							swipe(player, ATTACK_SWIPE_START, ATTACK_SWIPE_END, 250, 500);
+							swipe(player, std::rand() % 2 ? ATTACK_SWIPE_START_1 : ATTACK_SWIPE_START_2, ATTACK_SWIPE_END, 250, 500);
 							count++;
 						}
 						find_click_img_until_img_dissapears(player, "attack", "attack", 500);
@@ -510,10 +516,11 @@ private:
 					int count = 0;
 					// Move allies to blocking position.
 					while (count < 6 && !find_img(player, "empty_board", true, 0.125)) {
-						swipe(player, BLOCK_SWIPE_START, BLOCK_SWIPE_END[count], 250, 500);
+						swipe(player, std::rand() % 2 ? BLOCK_SWIPE_START_1 : BLOCK_SWIPE_START_2, BLOCK_SWIPE_END[count], 250, 500);
 						count++;
 					}
-					find_click_img_until_img_dissapears(player, "block", "block", 500);
+					if (find_img(player, "block")) find_click_img_until_img_dissapears(player, "block", "block", 500);
+					else if (find_img(player, "skip_block")) find_click_img_until_img_dissapears(player, "skip_block", "skip_block", 500);
 				}
 				else if (find_img(player, "ok", false) || find_img(player, "attack", false) || find_img(player, "block", false) || find_img(player, "replace", false)) { // Just in case something went wrong.
 					click_coord(player, OK);
@@ -555,12 +562,12 @@ public:
 		init();
 		std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Running bot ..." << std::endl;
 		
-		SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
+		//SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
 		run_surrender_vs_friend(0);
 		run_surrender_vs_player(0);
 		run_surrender_vs_ai(0);
 		run_xp_farm(0);
-		SetThreadExecutionState(ES_CONTINUOUS);
+		//SetThreadExecutionState(ES_CONTINUOUS);
 
 		for (int player = 0; player < (vs_friend ? NUM_PLAYERS : 1); player++) {
 			std::stringstream ss;
