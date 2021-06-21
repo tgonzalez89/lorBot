@@ -505,7 +505,7 @@ private:
 
 					update_status(player);
 					// Check if attacking is possible.
-					if (attack && find_img(player, "attack_token", false) && (find_img(player, "pass", false) || find_img(player, "end_round", false))) {
+					if (attack && find_img(player, "attack_token", false) && (find_img(player, "pass", false) || find_img(player, "end_round", false) || find_img(player, "attack", false))) {
 						int count = 0;
 						// Move allies to attacking position.
 						while (count < 6 && !find_img(player, "empty_board", true, 0.125)) {
