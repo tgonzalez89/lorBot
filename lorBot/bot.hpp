@@ -160,7 +160,7 @@ private:
 
 	void init()
 	{
-		std::srand(std::time(nullptr));
+		std::srand(static_cast<unsigned>(std::time(nullptr)));
 		read_config();
 		load_imgs();
 
