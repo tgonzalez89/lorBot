@@ -22,8 +22,8 @@ constexpr int DEFAULT_SLEEP = 1000;
 constexpr int MAX_IMG_SEARCH_TIME = 120;
 
 constexpr POINT BIAS = { 2, 42 };
-constexpr POINT HOME = { 54 - BIAS.x, 100 - BIAS.y };
-constexpr POINT PLAY = { 54 - BIAS.x, 194 - BIAS.y };
+constexpr POINT HOME = { 54 - BIAS.x, 90 - BIAS.y };
+constexpr POINT PLAY = { 54 - BIAS.x, 170 - BIAS.y };
 constexpr POINT VS_PLAYER = { 184 - BIAS.x, 84 - BIAS.y };
 constexpr POINT VS_AI = { 184 - BIAS.x, 132 - BIAS.y };
 constexpr POINT NORMAL = { 824 - BIAS.x, 130 - BIAS.y };
@@ -40,16 +40,17 @@ constexpr POINT ATTACK_SWIPE_END = { 730 - BIAS.x, 410 - BIAS.y };
 constexpr POINT BLOCK_SWIPE_START_1 = { 428 - BIAS.x, 464 - BIAS.y };
 constexpr POINT BLOCK_SWIPE_START_2 = { 474 - BIAS.x, 464 - BIAS.y };
 constexpr POINT BLOCK_SWIPE_END[] = {
-	{ 192 - BIAS.x, 340 - BIAS.y },
-	{ 296 - BIAS.x, 340 - BIAS.y },
 	{ 400 - BIAS.x, 340 - BIAS.y },
 	{ 502 - BIAS.x, 340 - BIAS.y },
+	{ 296 - BIAS.x, 340 - BIAS.y },
 	{ 604 - BIAS.x, 340 - BIAS.y },
+	{ 192 - BIAS.x, 340 - BIAS.y },
 	{ 708 - BIAS.x, 340 - BIAS.y },
 };
 constexpr POINT OK = { 820 - BIAS.x, 296 - BIAS.y };
 constexpr POINT ABOVE_HAND_TUCKED = { 852 - BIAS.x, 410 - BIAS.y };
 constexpr POINT EXPAND_FRIENDS = { 883 - BIAS.x, 168 - BIAS.y };
+constexpr POINT CONTINUE = { 594 - BIAS.x, 490 - BIAS.y };
 
 constexpr int REFERENCE_WINDOW_SIZE_WIDTH = 896;
 constexpr int REFERENCE_WINDOW_SIZE_HEIGHT = 503;
@@ -360,8 +361,8 @@ private:
 			SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
 			std::cout << "INFO" << " - " << __FUNCTION__ << " - " << "Starting match #" << total - vs_friend + 1 << std::endl;
 
-			wait_for_img_to_show_up(player, "select_your_deck");
-			wait_for_img_to_show_up(!player, "select_your_deck");
+			// wait_for_img_to_show_up(player, "select_your_deck");
+			// wait_for_img_to_show_up(!player, "select_your_deck");
 			click_coord_until_img_shows_up(player, DECK_1, "ready");
 			click_coord_until_img_shows_up(!player, DECK_1, "ready");
 			find_click_img_until_img_dissapears(player, "ready", "ready");
@@ -374,10 +375,12 @@ private:
 			find_click_img_until_img_shows_up(surr_player, "surrender", "ok_button");
 			find_click_img_until_img_dissapears(surr_player, "ok_button", "ok_button");
 
-			click_coord_until_img_shows_up(player, ABOVE_HAND_TUCKED, "continue", 2000);
-			click_coord_until_img_shows_up(!player, ABOVE_HAND_TUCKED, "continue", 2000);
-			find_click_img_until_img_dissapears(player, "continue", "continue", 2000);
-			find_click_img_until_img_dissapears(!player, "continue", "continue", 2000);
+			// click_coord_until_img_shows_up(player, ABOVE_HAND_TUCKED, "continue", 2000);
+			// click_coord_until_img_shows_up(!player, ABOVE_HAND_TUCKED, "continue", 2000);
+			// find_click_img_until_img_dissapears(player, "continue", "continue", 2000);
+			// find_click_img_until_img_dissapears(!player, "continue", "continue", 2000);
+			click_coord_until_img_shows_up(player, CONTINUE, "select_your_deck", 3000);
+			click_coord_until_img_shows_up(!player, CONTINUE, "select_your_deck", 3000);
 
 			vs_friend--;
 		}
@@ -407,9 +410,10 @@ private:
 			click_coord_until_img_shows_up(player, OPTIONS, "surrender", 1000, 15);
 			find_click_img_until_img_shows_up(player, "surrender", "ok_button", 1000, 5);
 			find_click_img_until_img_dissapears(player, "ok_button", "ok_button", 1000, 5);
-			click_coord_until_img_shows_up(player, ABOVE_HAND_TUCKED, "continue", 2000);
-			find_click_img_until_img_dissapears(player, "continue", "continue", 2000);
-			wait_for_img_to_show_up(player, "play");
+			// click_coord_until_img_shows_up(player, ABOVE_HAND_TUCKED, "continue", 2000);
+			// find_click_img_until_img_dissapears(player, "continue", "continue", 2000);
+			click_coord_until_img_shows_up(player, CONTINUE, "play", 3000);
+			// wait_for_img_to_show_up(player, "play");
 			vs_player--;
 		}
 
@@ -437,9 +441,10 @@ private:
 			click_coord_until_img_shows_up(player, OPTIONS, "surrender");
 			find_click_img_until_img_shows_up(player, "surrender", "ok_button");
 			find_click_img_until_img_dissapears(player, "ok_button", "ok_button");
-			click_coord_until_img_shows_up(player, ABOVE_HAND_TUCKED, "continue", 2000);
-			find_click_img_until_img_dissapears(player, "continue", "continue", 2000);
-			wait_for_img_to_show_up(player, "play");
+			// click_coord_until_img_shows_up(player, ABOVE_HAND_TUCKED, "continue", 2000);
+			// find_click_img_until_img_dissapears(player, "continue", "continue", 2000);
+			click_coord_until_img_shows_up(player, CONTINUE, "play", 3000);
+			// wait_for_img_to_show_up(player, "play");
 			vs_ai--;
 		}
 
@@ -471,14 +476,14 @@ private:
 			auto elapsed_t = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_t).count();
 
 			bool full_life = true;
-			while (elapsed_t <= max_match_time && !find_img(player, "continue")) {
+			while (elapsed_t <= max_match_time && !find_img(player, "continue") && !find_img(player, "continue2") && !find_img(player, "play")) {
 				update_status(player);
 				if (find_img(player, "pass", false) || find_img(player, "end_round", false)) {
 					SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED);
-					if (!find_img(player, "full_life")) { // Check if player is bot or human by checking life totals
-						full_life = false;
-						break;
-					}
+					//if (!find_img(player, "full_life")) { // Check if player is bot or human by checking life totals
+					//	full_life = false;
+					//	break;
+					//}
 					click_coord(player, HAND_TUCKED, 500); // Open hand.
 					swipe(player, std::rand() % 2 ? HAND_EXPANDED_1 : HAND_EXPANDED_2, PLAY_CARD, 250, 500); // Try to play a card.
 
@@ -513,11 +518,11 @@ private:
 					click_coord(player, OK, 500); // Click to pass the turn (just in case something went wrong).
 				}
 				else if (find_img(player, "skip_block", false)) {
-					int count = 0;
+					int count = std::rand() % 3; // Block a few units.
 					// Move allies to blocking position.
-					while (count < 6 && !find_img(player, "empty_board", true, 0.125)) {
+					while (count > 0 && !find_img(player, "empty_board", true, 0.125)) {
 						swipe(player, std::rand() % 2 ? BLOCK_SWIPE_START_1 : BLOCK_SWIPE_START_2, BLOCK_SWIPE_END[count], 250, 500);
-						count++;
+						--count;
 					}
 					if (find_img(player, "block")) find_click_img_until_img_dissapears(player, "block", "block", 500);
 					else if (find_img(player, "skip_block")) find_click_img_until_img_dissapears(player, "skip_block", "skip_block", 500);
@@ -526,7 +531,7 @@ private:
 					click_coord(player, OK);
 				}
 				else {
-					click_coord(player, ABOVE_HAND_TUCKED);
+					click_coord(player, ABOVE_HAND_TUCKED); // Click on 'neutral' spot where there is nothing.
 				}
 
 				elapsed_t = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_t).count();
@@ -539,9 +544,10 @@ private:
 				find_click_img_until_img_dissapears(player, "ok_button", "ok_button", 1000, 5);
 			}
 
-			click_coord_until_img_shows_up(player, ABOVE_HAND_TUCKED, "continue", 2000);
-			find_click_img_until_img_dissapears(player, "continue", "continue", 2000);
-			wait_for_img_to_show_up(player, "play");
+			// click_coord_until_img_shows_up(player, ABOVE_HAND_TUCKED, "continue", 2000);
+			// find_click_img_until_img_dissapears(player, "continue", "continue", 2000);
+			// wait_for_img_to_show_up(player, "play");
+			click_coord_until_img_shows_up(player, CONTINUE, "play", 3000);
 
 			xp_farm--;
 			elapsed_t = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_t).count();
